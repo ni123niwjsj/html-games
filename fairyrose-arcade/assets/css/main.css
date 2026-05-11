@@ -1,0 +1,314 @@
+:root {
+  color-scheme: dark;
+  --bg: #080913;
+  --panel: rgba(255, 255, 255, 0.08);
+  --panel-strong: rgba(255, 255, 255, 0.13);
+  --line: rgba(255, 255, 255, 0.16);
+  --text: #fff7fb;
+  --muted: #b7a9bb;
+  --rose: #ff4fa3;
+  --rose-soft: #ff8ec8;
+  --cyan: #57e6ff;
+  --green: #8cffb0;
+  --yellow: #ffe071;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+  font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255, 79, 163, 0.22), transparent 28rem),
+    radial-gradient(circle at 88% 12%, rgba(87, 230, 255, 0.16), transparent 24rem),
+    linear-gradient(135deg, #080913 0%, #111326 45%, #0b0d17 100%);
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.85), transparent 85%);
+}
+
+a {
+  color: inherit;
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 40px 0 56px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 28px;
+  align-items: center;
+  min-height: 300px;
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  color: var(--cyan);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 18px;
+  font-size: clamp(40px, 7vw, 86px);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+h1 span {
+  color: var(--rose-soft);
+  text-shadow: 0 0 24px rgba(255, 79, 163, 0.58);
+}
+
+.hero-copy {
+  max-width: 660px;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.rose-core {
+  position: relative;
+  width: 220px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 142, 200, 0.45);
+  border-radius: 50%;
+  background:
+    conic-gradient(from 20deg, transparent 0 12%, rgba(255, 79, 163, 0.75) 13% 21%, transparent 22% 35%, rgba(87, 230, 255, 0.55) 36% 45%, transparent 46% 100%),
+    radial-gradient(circle, rgba(255, 79, 163, 0.3), transparent 68%);
+  box-shadow: 0 0 56px rgba(255, 79, 163, 0.28), inset 0 0 40px rgba(87, 230, 255, 0.08);
+  animation: spin 18s linear infinite;
+}
+
+.rose-core span {
+  position: absolute;
+  inset: 50px;
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 38% 62% 54% 46%;
+  box-shadow: inset 0 0 28px rgba(255, 79, 163, 0.28);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.control-panel {
+  display: grid;
+  grid-template-columns: minmax(260px, 390px) 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 142, 200, 0.25);
+  border-radius: 8px;
+  background: rgba(7, 8, 18, 0.72);
+}
+
+.search-box span {
+  color: var(--rose-soft);
+  font-size: 14px;
+}
+
+.search-box input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-button,
+.play-button {
+  border: 1px solid rgba(255, 142, 200, 0.34);
+  border-radius: 8px;
+  color: var(--text);
+  background: linear-gradient(135deg, rgba(255, 79, 163, 0.22), rgba(87, 230, 255, 0.1));
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.filter-button {
+  min-height: 40px;
+  padding: 0 16px;
+  font: inherit;
+}
+
+.filter-button.active,
+.filter-button:hover,
+.play-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 142, 200, 0.9);
+  box-shadow: 0 0 24px rgba(255, 79, 163, 0.25);
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  margin: 34px 0 18px;
+}
+
+.section-title h2 {
+  margin-bottom: 8px;
+  font-size: 26px;
+}
+
+.section-title p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.game-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.13), rgba(255,255,255,0.055));
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.card-glow {
+  position: absolute;
+  top: -70px;
+  right: -70px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 79, 163, 0.22);
+  filter: blur(10px);
+}
+
+.game-meta,
+.card-stats {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-meta span,
+.card-stats span {
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  color: #f8edf4;
+  background: rgba(0,0,0,0.24);
+  font-size: 12px;
+}
+
+.game-card h3 {
+  position: relative;
+  margin: 20px 0 8px;
+  font-size: 25px;
+}
+
+.subtitle {
+  color: var(--cyan);
+}
+
+.description {
+  min-height: 72px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.play-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 20px;
+  padding: 0 18px;
+  text-decoration: none;
+}
+
+.empty {
+  grid-column: 1 / -1;
+  padding: 34px;
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 8px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .page-shell {
+    width: min(100% - 22px, 560px);
+    padding-top: 22px;
+  }
+
+  .hero,
+  .control-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .rose-core {
+    width: min(180px, 58vw);
+    justify-self: center;
+  }
+
+  .hero-copy {
+    font-size: 16px;
+  }
+
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+}

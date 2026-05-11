@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fairy Rose Arcade / 玫瑰小游戏厅</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Pure Static HTML Arcade</p>
+        <h1>Fairy Rose Arcade<br><span>玫瑰小游戏厅</span></h1>
+        <p class="hero-copy">无需构建、无需后端、无需 CDN。打开即玩，也可以直接部署到 GitHub Pages 或 Cloudflare Pages。</p>
+      </div>
+      <div class="rose-core" aria-hidden="true">
+        <span></span>
+      </div>
+    </header>
+
+    <section class="control-panel" aria-label="游戏筛选">
+      <label class="search-box">
+        <span>搜索</span>
+        <input id="searchInput" type="search" placeholder="搜索游戏名称或简介">
+      </label>
+      <div id="categoryFilters" class="filters" aria-label="分类筛选"></div>
+    </section>
+
+    <section class="section-title">
+      <div>
+        <h2>游戏列表</h2>
+        <p id="resultCount">正在加载游戏...</p>
+      </div>
+    </section>
+
+    <section id="gameGrid" class="game-grid" aria-live="polite"></section>
+  </main>
+
+  <template id="gameCardTemplate">
+    <article class="game-card">
+      <div class="card-glow"></div>
+      <div class="game-meta">
+        <span class="category"></span>
+        <span class="difficulty"></span>
+      </div>
+      <h3></h3>
+      <p class="subtitle"></p>
+      <p class="description"></p>
+      <div class="card-stats">
+        <span class="mobile"></span>
+        <span class="score"></span>
+      </div>
+      <a class="play-button" href="#">开始游戏</a>
+    </article>
+  </template>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

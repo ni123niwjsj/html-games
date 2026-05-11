@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>星际突围 - Fairy Rose Arcade</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,rgba(255,79,163,.25),transparent 28rem),#080913;color:#fff7fb;font-family:"Microsoft YaHei",Arial,sans-serif;display:grid;place-items:center;padding:14px}.wrap{width:min(760px,100%)}header,.bar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}h1{margin:0}a,button,select{border:1px solid rgba(255,142,200,.45);border-radius:8px;background:rgba(255,79,163,.16);color:#fff;padding:10px 14px;text-decoration:none;font:inherit}button{cursor:pointer}select option{background:#151628}.stat{padding:10px 12px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:rgba(255,255,255,.08)}canvas{display:block;width:100%;max-height:74vh;aspect-ratio:3/4;border:1px solid rgba(255,255,255,.16);border-radius:8px;background:#0b1022;touch-action:none;box-shadow:0 24px 70px rgba(0,0,0,.4)}.hint{color:#b7a9bb;line-height:1.7}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><h1>星际突围</h1><a href="../../index.html">返回大厅</a></header>
+    <section class="bar">
+      <span class="stat">分数：<b id="score">0</b></span><span class="stat">最高分：<b id="best">0</b></span><span class="stat">生命：<b id="hp">3</b></span><span class="stat">Boss：<b id="boss">未出现</b></span>
+      <select id="difficulty"><option value="easy">简单：辅助瞄准</option><option value="normal" selected>普通</option><option value="hard">困难</option></select><button id="restart">开始 / 重开</button>
+    </section>
+    <canvas id="game" width="600" height="800"></canvas>
+    <p class="hint">键盘 WASD/方向键移动，空格射击；手机拖动飞船会自动开火。拾取爱心回血、闪电连射、护盾抵挡伤害。简单模式子弹会轻微追踪敌人。</p>
+  </main>
+  <script>
+    const canvas=document.getElementById("game"),ctx=canvas.getContext("2d"),scoreEl=document.getElementById("score"),bestEl=document.getElementById("best"),hpEl=document.getElementById("hp"),bossEl=document.getElementById("boss"),key="space_shooter_high_score";
+    let best=Number(localStorage.getItem(key)||0),score=0,ship,bullets,enemies,rocks,powers,enemyBullets,boss,keys={},frame=0,over=false,diff="normal",fireCd=0,rapid=0,shield=0,loopStarted=false;bestEl.textContent=best;
+    const diffMap={easy:{enemy:80,rock:115,speed:.8,hp:4,aim:true},normal:{enemy:62,rock:95,speed:1,hp:3,aim:false},hard:{enemy:42,rock:72,speed:1.25,hp:2,aim:false}};
+    function reset(){diff=document.getElementById("difficulty").value;const d=diffMap[diff];score=0;frame=0;over=false;ship={x:300,y:700,r:18,hp:d.hp};bullets=[];enemies=[];rocks=[];powers=[];enemyBullets=[];boss=null;rapid=0;shield=0;sync();if(!loopStarted){loopStarted=true;requestAnimationFrame(loop)}}
+    function sync(){scoreEl.textContent=score;if(score>best){best=score;localStorage.setItem(key,best)}bestEl.textContent=best;hpEl.textContent=ship.hp;bossEl.textContent=boss?Math.max(0,boss.hp):"未出现"}
+    function shoot(){if(fireCd>0)return;bullets.push({x:ship.x,y:ship.y-22,vx:0,vy:-9,r:4});if(rapid>0){bullets.push({x:ship.x-12,y:ship.y-18,vx:-1,vy:-8,r:4},{x:ship.x+12,y:ship.y-18,vx:1,vy:-8,r:4})}fireCd=rapid>0?7:13}
+    function spawnEnemy(){enemies.push({x:30+Math.random()*540,y:-30,r:18,hp:2,vx:(Math.random()-.5)*1.5,vy:1.5*diffMap[diff].speed,shot:60+Math.random()*50})}
+    function spawnRock(){const r=16+Math.random()*18;rocks.push({x:r+Math.random()*(600-r*2),y:-r,r,vy:(1.8+Math.random()*1.8)*diffMap[diff].speed,rot:0})}
+    function spawnBoss(){boss={x:300,y:88,w:138,h:58,hp:90+frame/40,vx:2.2*diffMap[diff].speed,shot:0}}
+    function hit(a,b){return Math.hypot(a.x-b.x,a.y-b.y)<(a.r+b.r)}
+    function update(){if(over)return;frame++;const d=diffMap[diff];if(keys.ArrowLeft||keys.a||keys.A)ship.x-=5;if(keys.ArrowRight||keys.d||keys.D)ship.x+=5;if(keys.ArrowUp||keys.w||keys.W)ship.y-=5;if(keys.ArrowDown||keys.s||keys.S)ship.y+=5;ship.x=Math.max(22,Math.min(578,ship.x));ship.y=Math.max(90,Math.min(760,ship.y));if(keys[" "])shoot();if(frame%d.enemy===0)spawnEnemy();if(frame%d.rock===0)spawnRock();if(!boss&&frame>1800)spawnBoss();fireCd--;rapid--;shield--;
+      if(d.aim&&bullets.length){const targets=[...enemies];if(boss)targets.push({x:boss.x,y:boss.y,r:70});bullets.forEach(b=>{let t=targets.sort((a,c)=>Math.hypot(a.x-b.x,a.y-b.y)-Math.hypot(c.x-b.x,c.y-b.y))[0];if(t){b.vx+=(t.x-b.x)*.0009;b.vx=Math.max(-3,Math.min(3,b.vx))}})}
+      bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy});bullets=bullets.filter(b=>b.y>-30&&b.x>-20&&b.x<620);
+      enemies.forEach(e=>{e.x+=e.vx;e.y+=e.vy;e.shot--;if(e.shot<0){enemyBullets.push({x:e.x,y:e.y+14,vx:(ship.x-e.x)/95,vy:3.1,r:5});e.shot=90}});rocks.forEach(r=>{r.y+=r.vy;r.rot+=.04});enemyBullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy});
+      if(boss){boss.x+=boss.vx;if(boss.x<90||boss.x>510)boss.vx*=-1;boss.shot--;if(boss.shot<=0){for(let i=-2;i<=2;i++)enemyBullets.push({x:boss.x,y:boss.y+42,vx:i*1.1,vy:3.2,r:6});boss.shot=44}}
+      bullets.forEach(b=>{enemies.forEach(e=>{if(e.hp>0&&hit(b,e)){b.dead=true;e.hp--;if(e.hp<=0){score+=60;if(Math.random()<.18)powers.push({x:e.x,y:e.y,type:["heart","rapid","shield"][Math.floor(Math.random()*3)]})}}});rocks.forEach(r=>{if(!r.dead&&hit(b,r)){b.dead=true;r.r-=8;score+=12;if(r.r<12)r.dead=true}});if(boss&&b.x>boss.x-boss.w/2&&b.x<boss.x+boss.w/2&&b.y>boss.y-boss.h/2&&b.y<boss.y+boss.h/2){b.dead=true;boss.hp--;score+=5;if(boss.hp<=0){score+=1500;boss=null;frame=0}}});
+      bullets=bullets.filter(b=>!b.dead);enemies=enemies.filter(e=>e.hp>0&&e.y<840);rocks=rocks.filter(r=>!r.dead&&r.y<840);enemyBullets=enemyBullets.filter(b=>b.y<840);
+      powers.forEach(p=>p.y+=2.5);powers.forEach(p=>{if(Math.hypot(p.x-ship.x,p.y-ship.y)<28){p.dead=true;if(p.type==="heart")ship.hp++;if(p.type==="rapid")rapid=520;if(p.type==="shield")shield=520;score+=80}});powers=powers.filter(p=>!p.dead&&p.y<820);
+      [...enemies,...rocks,...enemyBullets].forEach(o=>{if(!o.dead&&hit(ship,o)){o.dead=true;if(shield<=0)ship.hp--;else score+=25}});if(boss&&ship.x>boss.x-boss.w/2&&ship.x<boss.x+boss.w/2&&ship.y>boss.y-boss.h/2&&ship.y<boss.y+boss.h/2){if(shield<=0)ship.hp=0}
+      if(ship.hp<=0)over=true;sync()}
+    function draw(){ctx.clearRect(0,0,600,800);ctx.fillStyle="#0d1022";ctx.fillRect(0,0,600,800);ctx.fillStyle="rgba(255,255,255,.55)";for(let i=0;i<80;i++){const y=(i*97+frame*2)%800;ctx.fillRect((i*67)%600,y,2,2)}ctx.save();ctx.translate(ship.x,ship.y);ctx.fillStyle=shield>0?"#8cffb0":"#ff4fa3";ctx.beginPath();ctx.moveTo(0,-24);ctx.lineTo(19,22);ctx.lineTo(0,12);ctx.lineTo(-19,22);ctx.closePath();ctx.fill();ctx.fillStyle="#57e6ff";ctx.fillRect(-6,4,12,18);ctx.restore();if(shield>0){ctx.strokeStyle="rgba(140,255,176,.5)";ctx.beginPath();ctx.arc(ship.x,ship.y,32,0,Math.PI*2);ctx.stroke()}bullets.forEach(b=>{ctx.fillStyle="#ffe071";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill()});enemies.forEach(e=>{ctx.fillStyle="#57e6ff";ctx.beginPath();ctx.moveTo(e.x,e.y+20);ctx.lineTo(e.x-18,e.y-12);ctx.lineTo(e.x+18,e.y-12);ctx.closePath();ctx.fill()});rocks.forEach(r=>{ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.strokeStyle="#b7a9bb";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,r.r,0,Math.PI*2);ctx.stroke();ctx.restore()});enemyBullets.forEach(b=>{ctx.fillStyle="#ff8ec8";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill()});powers.forEach(p=>{ctx.fillStyle=p.type==="heart"?"#ff4fa3":p.type==="rapid"?"#ffe071":"#8cffb0";ctx.fillRect(p.x-10,p.y-10,20,20)});if(boss){ctx.fillStyle="#c7376d";round(boss.x-boss.w/2,boss.y-boss.h/2,boss.w,boss.h,10);ctx.fill();ctx.fillStyle="#fff";ctx.fillRect(boss.x-50,boss.y-44,100*Math.max(0,boss.hp)/(90+frame/40),6)}if(over){ctx.fillStyle="rgba(0,0,0,.62)";ctx.fillRect(0,0,600,800);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font="38px Microsoft YaHei";ctx.fillText("飞船失联",300,375);ctx.font="18px Microsoft YaHei";ctx.fillText("点击开始 / 重开继续挑战",300,415)}}
+    function round(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+    function loop(){update();draw();requestAnimationFrame(loop)}
+    document.addEventListener("keydown",e=>{keys[e.key]=true;if(e.key===" ")e.preventDefault()});document.addEventListener("keyup",e=>keys[e.key]=false);
+    function touchMove(e){e.preventDefault();const r=canvas.getBoundingClientRect(),t=e.touches[0];ship.x=(t.clientX-r.left)/r.width*600;ship.y=(t.clientY-r.top)/r.height*800;shoot()}canvas.addEventListener("touchstart",touchMove,{passive:false});canvas.addEventListener("touchmove",touchMove,{passive:false});canvas.addEventListener("mousedown",e=>{keys[" "]=true});canvas.addEventListener("mouseup",()=>keys[" "]=false);document.getElementById("restart").onclick=reset;reset();
+  </script>
+</body>
+</html>

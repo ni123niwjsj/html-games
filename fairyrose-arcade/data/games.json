@@ -1,0 +1,57 @@
+[
+  {
+    "id": "space-shooter",
+    "title": "星际突围",
+    "subtitle": "纵版太空射击",
+    "category": "射击",
+    "difficulty": "中等",
+    "mobile": true,
+    "description": "驾驶飞船穿越敌机和陨石群，击败 Boss，挑战高分。",
+    "path": "games/space-shooter/index.html",
+    "storageKey": "space_shooter_high_score"
+  },
+  {
+    "id": "snake",
+    "title": "霓虹贪吃蛇",
+    "subtitle": "经典成长挑战",
+    "category": "经典",
+    "difficulty": "简单",
+    "mobile": true,
+    "description": "控制小蛇吃掉能量玫瑰，身体越长越考验走位。",
+    "path": "games/snake/index.html",
+    "storageKey": "snake_high_score"
+  },
+  {
+    "id": "2048",
+    "title": "玫瑰 2048",
+    "subtitle": "数字合成益智",
+    "category": "益智",
+    "difficulty": "中等",
+    "mobile": true,
+    "description": "滑动数字方块合成 2048，支持撤销一步。",
+    "path": "games/2048/index.html",
+    "storageKey": "rose_2048_high_score"
+  },
+  {
+    "id": "minesweeper",
+    "title": "星尘扫雷",
+    "subtitle": "逻辑推理",
+    "category": "益智",
+    "difficulty": "困难",
+    "mobile": true,
+    "description": "根据数字推断雷区位置，长按可以插旗。",
+    "path": "games/minesweeper/index.html",
+    "storageKey": "minesweeper_best_time"
+  },
+  {
+    "id": "breakout",
+    "title": "玫瑰打砖块",
+    "subtitle": "街机动作",
+    "category": "动作",
+    "difficulty": "中等",
+    "mobile": true,
+    "description": "移动挡板反弹能量球，拾取道具并击碎所有砖块。",
+    "path": "games/breakout/index.html",
+    "storageKey": "breakout_high_score"
+  }
+]
