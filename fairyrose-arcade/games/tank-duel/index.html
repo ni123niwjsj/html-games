@@ -109,6 +109,7 @@
     const knob = document.getElementById("knob");
     const fireTouch = document.getElementById("fireTouch");
 
+    const WORKER_DEFAULT = "https://fairyrose-arcade-tank-duel.shuaigey536.workers.dev";
     const clientId = localStorage.getItem("tank_duel_player_id") || crypto.randomUUID();
     localStorage.setItem("tank_duel_player_id", clientId);
 
@@ -121,7 +122,7 @@
     let lastInput = "";
     let reconnectTimer = null;
     let lastFinishKey = "";
-    let serverBase = localStorage.getItem("tank_duel_server") || defaultServerBase();
+    let serverBase = getInitialServerBase();
 
     serverInput.value = serverBase;
     hydrateFromUrl();
@@ -131,7 +132,17 @@
     function defaultServerBase() {
       if (location.protocol === "file:") return "http://127.0.0.1:8787";
       if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return "http://127.0.0.1:8787";
-      return "https://fairyrose-arcade-tank-duel.shuaigey536.workers.dev";
+      return WORKER_DEFAULT;
+    }
+
+    function getInitialServerBase() {
+      const saved = localStorage.getItem("tank_duel_server");
+      const pageOrigin = location.origin.replace(/\/$/, "");
+      if (!saved || saved.replace(/\/$/, "") === pageOrigin) {
+        localStorage.setItem("tank_duel_server", defaultServerBase());
+        return defaultServerBase();
+      }
+      return saved;
     }
 
     function hydrateFromUrl() {
@@ -162,11 +173,24 @@
     async function createRoom() {
       saveServer();
       setStatus("正在创建房间...");
-      const response = await fetch(api("/api/create"));
-      const data = await response.json();
+      const response = await fetchWithTimeout(api("/api/create"), {}, 10000);
+      const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "创建房间失败");
       roomInput.value = data.roomCode;
       connect(data.roomCode);
+    }
+
+    async function fetchWithTimeout(url, options, timeout) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } catch (error) {
+        if (error.name === "AbortError") throw new Error("创建房间超时，请检查 Worker 地址。");
+        throw new Error("无法连接 Worker，请检查 Worker 地址或网络。");
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
     async function joinRoom() {
@@ -371,8 +395,14 @@
     function showMenu() { menu.style.display = "grid"; }
     function hideMenu() { menu.style.display = "none"; }
 
-    document.getElementById("createRoom").onclick = () => createRoom().catch(error => showToast(error.message));
-    document.getElementById("joinRoom").onclick = () => joinRoom().catch(error => showToast(error.message));
+    document.getElementById("createRoom").onclick = () => createRoom().catch(error => {
+      setStatus("创建房间失败");
+      showToast(error.message);
+    });
+    document.getElementById("joinRoom").onclick = () => joinRoom().catch(error => {
+      setStatus("加入房间失败");
+      showToast(error.message);
+    });
     document.getElementById("openMenu").onclick = showMenu;
     document.getElementById("restartMatch").onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "restart" }));
