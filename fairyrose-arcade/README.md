@@ -96,7 +96,7 @@ new_sqlite_classes = ["TankRoom"]
 部署完成后，进入《玫瑰坦克对决》，把 Worker 地址填成你的 Worker 域名，例如：
 
 ```text
-https://fairyrose-arcade-tank-duel.your-name.workers.dev
+https://fairyrose-arcade-tank-duel.shuaigey536.workers.dev
 ```
 
 创建房间后复制邀请链接给朋友。邀请链接会带上房间码和 Worker 地址。

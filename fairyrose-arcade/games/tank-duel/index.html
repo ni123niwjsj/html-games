@@ -131,7 +131,7 @@
     function defaultServerBase() {
       if (location.protocol === "file:") return "http://127.0.0.1:8787";
       if (location.hostname === "localhost" || location.hostname === "127.0.0.1") return "http://127.0.0.1:8787";
-      return location.origin;
+      return "https://fairyrose-arcade-tank-duel.shuaigey536.workers.dev";
     }
 
     function hydrateFromUrl() {
