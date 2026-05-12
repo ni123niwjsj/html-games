@@ -1,165 +1,88 @@
 # Fairy Rose Arcade / 玫瑰小游戏厅
 
-一个可以部署到 Cloudflare Pages / GitHub Pages 的 HTML 小游戏合集。
+一个可以直接部署到 Cloudflare Pages 或 GitHub Pages 的 HTML 小游戏合集。大厅和单机游戏仍然是纯 HTML、CSS、JavaScript，不需要 React、Vue、Vite、Node 构建流程，也不依赖后端。
 
-单机游戏部分仍然是纯静态 HTML + CSS + JavaScript，不依赖后端、不依赖外部 CDN、不需要构建流程。新增的在线双人《玫瑰坦克对决》使用 Cloudflare Worker + Durable Object 提供实时房间服务。
-
-## 项目结构
-
-```text
-fairyrose-arcade/
-├─ index.html
-├─ README.md
-├─ wrangler.toml
-├─ assets/
-│  ├─ css/main.css
-│  ├─ js/main.js
-│  └─ images/
-├─ data/games.json
-├─ games/
-│  ├─ space-shooter/index.html
-│  ├─ snake/index.html
-│  ├─ 2048/index.html
-│  ├─ minesweeper/index.html
-│  ├─ breakout/index.html
-│  └─ tank-duel/index.html
-└─ worker/
-   └─ index.js
-```
+项目现在包含原有 Fairy Rose 游戏，以及从 GameHub 逐个接入的 42 款 HTML5 小游戏。GameHub 版本统一放在 `games/gamehub-*` 目录，不会覆盖原有同名游戏。
 
 ## 本地运行
 
-直接双击 `index.html` 可以打开大厅和所有单机游戏。
+可以直接双击 `index.html` 打开。由于浏览器的 `file://` 限制，首页读取 `data/games.json` 失败时会自动使用 `assets/js/main.js` 内置的备用列表。
 
-如果要测试在线双人坦克战，需要启动 Cloudflare Worker 本地服务：
-
-```bash
-cd fairyrose-arcade
-npx wrangler dev
-```
-
-然后再用静态服务器打开前端：
+也可以使用任意静态服务器预览，例如：
 
 ```bash
-python -m http.server 8000
+python -m http.server 8080
 ```
 
-访问：
+然后访问 `http://localhost:8080`。
 
-```text
-http://localhost:8000
-```
-
-进入《玫瑰坦克对决》后，Worker 地址默认是：
-
-```text
-http://127.0.0.1:8787
-```
-
-打开两个浏览器窗口，一个创建房间，一个输入房间码加入即可测试。
-
-## 在线双人部署到 Cloudflare
-
-推荐部署方式：
-
-- Cloudflare Pages：托管大厅和所有 `games/` 静态页面。
-- Cloudflare Worker：托管 `worker/index.js`。
-- Durable Object：管理实时房间、WebSocket、坦克状态、炮弹和比分。
-
-部署 Worker：
-
-```bash
-cd fairyrose-arcade
-npx wrangler deploy
-```
-
-`wrangler.toml` 已经包含 Durable Object 绑定和迁移：
-
-```toml
-[[durable_objects.bindings]]
-name = "TANK_ROOMS"
-class_name = "TankRoom"
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["TankRoom"]
-```
-
-部署 Pages：
-
-1. 将项目推送到 GitHub。
-2. 在 Cloudflare Dashboard 创建 Pages 项目。
-3. 连接 GitHub 仓库。
-4. Build command 留空。
-5. Build output directory 填 `/`；如果不允许 `/`，选择项目根目录。
-
-部署完成后，进入《玫瑰坦克对决》，把 Worker 地址填成你的 Worker 域名，例如：
-
-```text
-https://fairyrose-arcade-tank-duel.shuaigey536.workers.dev
-```
-
-创建房间后复制邀请链接给朋友。邀请链接会带上房间码和 Worker 地址。
-
-Cloudflare 免费额度适合轻量试玩和朋友间使用；如果访问量明显增加，请关注 Workers、Durable Objects、请求数和 CPU 时间用量。
-
-## 新增小游戏
+## 如何新增一个小游戏
 
 以新增 `flappy-bird` 为例：
 
-1. 创建 `games/flappy-bird/index.html`。
-2. 在页面内写完整 HTML、CSS、JavaScript。
-3. 添加返回大厅按钮，链接到 `../../index.html`。
-4. 在 `data/games.json` 增加配置：
+1. 创建目录 `games/flappy-bird/`。
+2. 在里面放入 `index.html`，并保证它可以独立打开运行。
+3. 在页面里加入返回大厅链接：`../../index.html`。
+4. 在 `data/games.json` 增加一条配置。
+5. 在 `assets/js/main.js` 的 `fallbackGames` 里同步增加同一条配置，这样双击本地文件时也能显示。
+
+示例配置：
 
 ```json
 {
   "id": "flappy-bird",
-  "title": "玫瑰飞鸟",
-  "subtitle": "轻量闪避挑战",
-  "category": "休闲",
+  "title": "Flappy Bird",
+  "subtitle": "点击飞行",
+  "category": "动作",
   "difficulty": "中等",
   "mobile": true,
-  "description": "点击或按空格让小鸟飞起，穿过管道挑战高分。",
+  "description": "点击控制小鸟穿过障碍，挑战更远距离。",
   "path": "games/flappy-bird/index.html",
   "storageKey": "flappy_bird_high_score"
 }
 ```
 
-5. 如果希望 `file://` 打开首页时也能显示新游戏，同步修改 `assets/js/main.js` 里的 `fallbackGames`。
+## 修改 data/games.json
 
-## data/games.json 字段
+每个游戏对象包含 `id`、`title`、`subtitle`、`category`、`difficulty`、`mobile`、`description`、`path`、`storageKey`。分类可使用 `射击`、`益智`、`动作`、`经典`、`棋牌`、`记忆`、`打字`、`休闲`、`在线双人`。
 
-每个游戏对象包含：
+修改后建议用 JSON 校验工具确认格式正确。
 
-- `id`：游戏唯一标识，建议和文件夹名一致。
-- `title`：首页卡片游戏名称。
-- `subtitle`：游戏副标题。
-- `category`：分类，例如射击、益智、动作、休闲、经典、在线双人。
-- `difficulty`：难度标签。
-- `mobile`：是否支持手机端。
-- `description`：简短介绍。
-- `path`：游戏页面路径。
-- `storageKey`：本地最高分或战绩使用的 localStorage 键名。
+## Cloudflare Pages 部署
+
+这是纯静态项目，Cloudflare Pages 可以直接连接 GitHub 仓库部署。
+
+- Build command：留空
+- Build output directory：`/`
+- 如果 Pages 不接受 `/`，就选择项目根目录
+
+推荐 GitHub 仓库名：`fairyrose-arcade` 或 `html-games`。
+
+## 在线双人坦克部署
+
+`games/tank-duel/` 是静态前端，实时联机由 Cloudflare Worker + Durable Object 提供。
+
+```bash
+npx wrangler deploy
+```
+
+Cloudflare Pages 负责大厅和游戏页面，Worker 负责坦克房间、WebSocket、同步和判定。Cloudflare 免费额度适合轻量试玩；访问量明显增加后，需要关注 Workers 和 Durable Objects 的用量成本。
 
 ## 绑定自定义域名
 
-Pages 自定义域名：
+1. 在 Cloudflare Pages 项目里打开 `Custom domains`。
+2. 添加你的域名或子域名。
+3. 按 Cloudflare 提示添加 DNS 记录。
+4. 等待证书签发完成。
 
-1. 进入 Cloudflare Pages 项目。
-2. 打开 Custom domains。
-3. 添加你的域名，例如 `arcade.example.com`。
-4. 按提示配置 DNS。
+如果域名 DNS 本来就在 Cloudflare，通常只需要几分钟。
 
-Worker 自定义域名或路由：
+## GameHub 来源与许可证
 
-1. 进入 Worker 项目。
-2. 打开 Triggers。
-3. 添加自定义域名或 Route。
-4. 如果希望游戏默认同源调用 Worker，可以把 Worker 路由挂到 Pages 同域名的 `/api/*`。
+本项目接入了 [SinceraXY/GameHub](https://github.com/SinceraXY/GameHub) 的 42 款 HTML5 小游戏，许可证为 Apache-2.0。
 
-## 推荐 GitHub 仓库名
-
-```text
-fairyrose-arcade
-```
+- 每个 GameHub 游戏都迁移为独立入口，不嵌套原 GameHub 大厅。
+- 目录统一命名为 `games/gamehub-<slug>/`。
+- 与现有游戏重名时保留两版，例如原版 `games/snake/` 和 GameHub 版 `games/gamehub-snake/`。
+- 移除了外部字体、图标 CDN 等远程依赖，并加入返回大厅按钮。
+- 第三方说明见 `THIRD_PARTY_NOTICES.md`，许可证副本见 `licenses/GameHub-Apache-2.0.txt`。

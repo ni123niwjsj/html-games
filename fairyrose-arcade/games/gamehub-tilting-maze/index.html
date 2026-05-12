@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!-- Adapted from SinceraXY/GameHub under Apache-2.0. See THIRD_PARTY_NOTICES.md. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tilting Maze - Balance Ball Game</title>
+    <meta name="description" content="Navigate balls through a tilting maze using joystick controls. Test your balance and precision skills!" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect fill='%2336382e' x='4' y='4' width='56' height='56' rx='4'/%3E%3Cpath fill='none' stroke='%23ede6e3' stroke-width='3' d='M12 12h40M12 20h40M12 28h40M12 36h40M12 44h40M12 52h40M12 12v40M20 12v40M28 12v40M36 12v40M44 12v40M52 12v40'/%3E%3Ccircle fill='%23f06449' cx='32' cy='32' r='6'/%3E%3C/svg%3E" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+      <style>
+      .fairy-return-hall {
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 99999;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 1px solid rgba(255, 118, 194, 0.55);
+        border-radius: 999px;
+        background: rgba(15, 17, 35, 0.78);
+        color: #fff;
+        font: 700 14px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-decoration: none;
+        box-shadow: 0 0 18px rgba(255, 71, 166, 0.26);
+        backdrop-filter: blur(12px);
+      }
+      .fairy-return-hall:hover { background: rgba(255, 71, 166, 0.24); }
+      @media (max-width: 640px) {
+        .fairy-return-hall { top: 8px; left: 8px; min-height: 34px; padding: 7px 12px; font-size: 13px; }
+      }
+    </style></head>
+  <body>
+    <a class="fairy-return-hall" href="../../index.html">返回大厅</a>
+    <!-- Game Title -->
+    <header class="game-header">
+      <h1 class="game-title">
+        <svg class="title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+<!-- GitHub: https://github.com/SinceraXY/GameHub -->
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        </svg>
+        Tilting Maze
+      </h1>
+      <p class="game-subtitle">Balance the balls to the center</p>
+    </header>
+
+    <!-- Game Container -->
+    <div id="center">
+      <div id="game">
+
+<!-- Contact: 2952671670@qq.com -->
+
+        <!-- Maze Board -->
+        <div id="maze">
+          <div id="end"></div>
+        </div>
+        
+        <!-- Control Joystick -->
+        <div id="joystick">
+          <div class="joystick-arrow"></div>
+          <div class="joystick-arrow"></div>
+    <!-- Contact: 2952671670@qq.com -->
+          <div class="joystick-arrow"></div>
+          <div class="joystick-arrow"></div>
+    <!-- Made by SinceraXY -->
+<!-- Project: GameHub -->
+          <div id="joystick-head"></div>
+        </div>
+        
+        <!-- Instructions -->
+        <div id="note">
+          <strong>Click the joystick to start!</strong>
+          <p>Move every ball to the center circle.</p>
+          <p class="mode-hint">Ready for hard mode? Press <kbd>H</kbd></p>
+          <p class="controls-hint">Press <kbd>Space</kbd> to restart</p>
+        </div>
+    <!-- SinceraXY @ China University of Petroleum, Beijing -->
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
