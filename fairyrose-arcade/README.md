@@ -1,8 +1,8 @@
 # Fairy Rose Arcade / 玫瑰小游戏厅
 
-一个可直接部署到 Cloudflare Pages / GitHub Pages 的纯静态 HTML 小游戏合集项目。
+一个可以部署到 Cloudflare Pages / GitHub Pages 的 HTML 小游戏合集。
 
-项目不使用 React、Vue、Vite、Node 构建流程，不依赖后端，不依赖外部 CDN。所有页面都是普通的 HTML + CSS + JavaScript，可以直接双击 `index.html` 本地运行。
+单机游戏部分仍然是纯静态 HTML + CSS + JavaScript，不依赖后端、不依赖外部 CDN、不需要构建流程。新增的在线双人《玫瑰坦克对决》使用 Cloudflare Worker + Durable Object 提供实时房间服务。
 
 ## 项目结构
 
@@ -10,85 +10,107 @@
 fairyrose-arcade/
 ├─ index.html
 ├─ README.md
+├─ wrangler.toml
 ├─ assets/
-│  ├─ css/
-│  │  └─ main.css
-│  ├─ js/
-│  │  └─ main.js
+│  ├─ css/main.css
+│  ├─ js/main.js
 │  └─ images/
+├─ data/games.json
 ├─ games/
-│  ├─ space-shooter/
-│  │  └─ index.html
-│  ├─ snake/
-│  │  └─ index.html
-│  ├─ 2048/
-│  │  └─ index.html
-│  ├─ minesweeper/
-│  │  └─ index.html
-│  └─ breakout/
-│     └─ index.html
-└─ data/
-   └─ games.json
+│  ├─ space-shooter/index.html
+│  ├─ snake/index.html
+│  ├─ 2048/index.html
+│  ├─ minesweeper/index.html
+│  ├─ breakout/index.html
+│  └─ tank-duel/index.html
+└─ worker/
+   └─ index.js
 ```
 
-## 已包含游戏
+## 本地运行
 
-- 星际突围：纵版太空射击，包含简单、普通、困难三档难度，简单模式带辅助瞄准。
-- 霓虹贪吃蛇：支持键盘、手机滑动、普通模式和加速模式。
-- 玫瑰 2048：支持键盘、手机滑动、最高分和撤销一步。
-- 星尘扫雷：支持简单、中等、困难，手机长按插旗。
-- 玫瑰打砖块：支持键盘、鼠标、触控，多关卡和道具掉落。
+直接双击 `index.html` 可以打开大厅和所有单机游戏。
 
-每个小游戏都有独立的 `index.html`，可以单独打开，也能从首页进入。最高分保存在浏览器 `localStorage` 中。
-
-## 本地运行方式
-
-方式一：直接双击运行。
-
-1. 打开项目目录。
-2. 双击 `fairyrose-arcade/index.html`。
-3. 进入首页后点击任意游戏卡片开始游戏。
-
-方式二：用任意静态服务器运行。
+如果要测试在线双人坦克战，需要启动 Cloudflare Worker 本地服务：
 
 ```bash
 cd fairyrose-arcade
+npx wrangler dev
+```
+
+然后再用静态服务器打开前端：
+
+```bash
 python -m http.server 8000
 ```
 
-然后访问：
+访问：
 
 ```text
 http://localhost:8000
 ```
 
-首页会优先读取 `data/games.json`。如果你用 `file://` 方式打开，部分浏览器会阻止 `fetch` 读取本地 JSON，首页脚本内置了备用游戏列表，因此仍然可以正常显示和跳转。
+进入《玫瑰坦克对决》后，Worker 地址默认是：
 
-## 如何新增一个小游戏
+```text
+http://127.0.0.1:8787
+```
+
+打开两个浏览器窗口，一个创建房间，一个输入房间码加入即可测试。
+
+## 在线双人部署到 Cloudflare
+
+推荐部署方式：
+
+- Cloudflare Pages：托管大厅和所有 `games/` 静态页面。
+- Cloudflare Worker：托管 `worker/index.js`。
+- Durable Object：管理实时房间、WebSocket、坦克状态、炮弹和比分。
+
+部署 Worker：
+
+```bash
+cd fairyrose-arcade
+npx wrangler deploy
+```
+
+`wrangler.toml` 已经包含 Durable Object 绑定和迁移：
+
+```toml
+[[durable_objects.bindings]]
+name = "TANK_ROOMS"
+class_name = "TankRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TankRoom"]
+```
+
+部署 Pages：
+
+1. 将项目推送到 GitHub。
+2. 在 Cloudflare Dashboard 创建 Pages 项目。
+3. 连接 GitHub 仓库。
+4. Build command 留空。
+5. Build output directory 填 `/`；如果不允许 `/`，选择项目根目录。
+
+部署完成后，进入《玫瑰坦克对决》，把 Worker 地址填成你的 Worker 域名，例如：
+
+```text
+https://fairyrose-arcade-tank-duel.your-name.workers.dev
+```
+
+创建房间后复制邀请链接给朋友。邀请链接会带上房间码和 Worker 地址。
+
+Cloudflare 免费额度适合轻量试玩和朋友间使用；如果访问量明显增加，请关注 Workers、Durable Objects、请求数和 CPU 时间用量。
+
+## 新增小游戏
 
 以新增 `flappy-bird` 为例：
 
-1. 创建目录：
-
-```text
-games/flappy-bird/
-```
-
-2. 在目录中创建游戏页面：
-
-```text
-games/flappy-bird/index.html
-```
-
-3. 这个页面建议包含：
-
-- 完整 HTML 结构。
-- 独立 CSS 和 JavaScript，可以直接写在页面内。
-- 返回大厅按钮：`../../index.html`。
-- `localStorage` 最高分保存逻辑。
-- 手机端和桌面端操作适配。
-
-4. 修改 `data/games.json`，增加一条配置：
+1. 创建 `games/flappy-bird/index.html`。
+2. 在页面内写完整 HTML、CSS、JavaScript。
+3. 添加返回大厅按钮，链接到 `../../index.html`。
+4. 在 `data/games.json` 增加配置：
 
 ```json
 {
@@ -104,97 +126,40 @@ games/flappy-bird/index.html
 }
 ```
 
-5. 回到首页，游戏会自动出现在卡片列表中。
+5. 如果希望 `file://` 打开首页时也能显示新游戏，同步修改 `assets/js/main.js` 里的 `fallbackGames`。
 
-## 如何修改 data/games.json
+## data/games.json 字段
 
-`data/games.json` 是首页游戏列表的数据源。每个游戏对象包含：
-
-```json
-{
-  "id": "space-shooter",
-  "title": "星际突围",
-  "subtitle": "纵版太空射击",
-  "category": "射击",
-  "difficulty": "中等",
-  "mobile": true,
-  "description": "驾驶飞船穿越敌机和陨石群，击败 Boss，挑战高分。",
-  "path": "games/space-shooter/index.html",
-  "storageKey": "space_shooter_high_score"
-}
-```
-
-字段说明：
+每个游戏对象包含：
 
 - `id`：游戏唯一标识，建议和文件夹名一致。
-- `title`：首页卡片显示的游戏名称。
+- `title`：首页卡片游戏名称。
 - `subtitle`：游戏副标题。
-- `category`：分类，例如射击、益智、动作、休闲、经典。
+- `category`：分类，例如射击、益智、动作、休闲、经典、在线双人。
 - `difficulty`：难度标签。
 - `mobile`：是否支持手机端。
 - `description`：简短介绍。
 - `path`：游戏页面路径。
-- `storageKey`：最高分保存在 `localStorage` 中使用的键名。
-
-修改时注意 JSON 格式必须合法：数组元素之间要有逗号，最后一个元素后面不要多写逗号。
-
-## 部署到 Cloudflare Pages
-
-1. 将整个 `fairyrose-arcade` 文件夹推送到 GitHub 仓库。
-2. 登录 Cloudflare Dashboard。
-3. 进入 Workers & Pages。
-4. 创建 Pages 项目，并连接你的 GitHub 仓库。
-5. 构建设置：
-
-```text
-Build command：留空
-Build output directory：/
-```
-
-如果 Cloudflare Pages 不允许填写 `/`，就选择项目根目录作为输出目录。因为本项目是纯静态项目，不需要安装依赖，也不需要构建步骤。
+- `storageKey`：本地最高分或战绩使用的 localStorage 键名。
 
 ## 绑定自定义域名
 
-1. 在 Cloudflare Pages 项目中进入 Custom domains。
-2. 点击 Set up a custom domain。
-3. 输入你的域名，例如：
+Pages 自定义域名：
 
-```text
-arcade.example.com
-```
+1. 进入 Cloudflare Pages 项目。
+2. 打开 Custom domains。
+3. 添加你的域名，例如 `arcade.example.com`。
+4. 按提示配置 DNS。
 
-4. 如果域名 DNS 已经托管在 Cloudflare，Cloudflare 会自动添加 CNAME 记录。
-5. 如果域名 DNS 不在 Cloudflare，请按页面提示到你的 DNS 服务商添加 CNAME 记录。
-6. 等待 DNS 生效和证书签发完成后，即可通过自定义域名访问。
+Worker 自定义域名或路由：
 
-## 部署到 GitHub Pages
-
-1. 将项目推送到 GitHub。
-2. 进入仓库 Settings。
-3. 打开 Pages。
-4. Source 选择 Deploy from a branch。
-5. Branch 选择 `main`，目录选择 `/root`。
-6. 保存后等待 GitHub Pages 部署完成。
+1. 进入 Worker 项目。
+2. 打开 Triggers。
+3. 添加自定义域名或 Route。
+4. 如果希望游戏默认同源调用 Worker，可以把 Worker 路由挂到 Pages 同域名的 `/api/*`。
 
 ## 推荐 GitHub 仓库名
-
-推荐使用：
 
 ```text
 fairyrose-arcade
 ```
-
-也可以使用：
-
-```text
-fairy-rose-arcade
-rose-html-arcade
-static-rose-games
-```
-
-## 维护建议
-
-- 每个游戏尽量保持独立，避免互相依赖。
-- 首页只负责展示、搜索、筛选和跳转。
-- 新游戏的最高分键名不要和旧游戏重复。
-- 如果以后游戏数量变多，可以继续扩展 `data/games.json`，无需改首页结构。

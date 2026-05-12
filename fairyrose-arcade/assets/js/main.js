@@ -54,6 +54,17 @@
       description: "移动挡板反弹能量球，拾取道具并击碎所有砖块。",
       path: "games/breakout/index.html",
       storageKey: "breakout_high_score"
+    },
+    {
+      id: "tank-duel",
+      title: "玫瑰坦克对决",
+      subtitle: "在线双人迷宫炮战",
+      category: "在线双人",
+      difficulty: "中等",
+      mobile: true,
+      description: "创建房间码邀请朋友加入，在迷宫中驾驶坦克，用会反弹的炮弹先拿 5 分。",
+      path: "games/tank-duel/index.html",
+      storageKey: "tank_duel_local_stats"
     }
   ];
 
@@ -67,8 +78,9 @@
 
   function scoreText(game) {
     const value = localStorage.getItem(game.storageKey);
-    if (!value) return "最高分：暂无";
+    if (!value) return game.id === "tank-duel" ? "本机战绩：暂无" : "最高分：暂无";
     if (game.id === "minesweeper") return `最佳：${value} 秒`;
+    if (game.id === "tank-duel") return `本机战绩：${value}`;
     return `最高分：${value}`;
   }
 

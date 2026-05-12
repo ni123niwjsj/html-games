@@ -1,0 +1,11 @@
+name = "fairyrose-arcade-tank-duel"
+main = "worker/index.js"
+compatibility_date = "2026-05-01"
+
+[[durable_objects.bindings]]
+name = "TANK_ROOMS"
+class_name = "TankRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TankRoom"]

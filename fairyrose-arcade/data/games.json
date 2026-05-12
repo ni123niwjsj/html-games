@@ -53,5 +53,16 @@
     "description": "移动挡板反弹能量球，拾取道具并击碎所有砖块。",
     "path": "games/breakout/index.html",
     "storageKey": "breakout_high_score"
+  },
+  {
+    "id": "tank-duel",
+    "title": "玫瑰坦克对决",
+    "subtitle": "在线双人迷宫炮战",
+    "category": "在线双人",
+    "difficulty": "中等",
+    "mobile": true,
+    "description": "创建房间码邀请朋友加入，在迷宫中驾驶坦克，用会反弹的炮弹先拿 5 分。",
+    "path": "games/tank-duel/index.html",
+    "storageKey": "tank_duel_local_stats"
   }
 ]
