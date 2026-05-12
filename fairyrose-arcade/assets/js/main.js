@@ -529,31 +529,40 @@ const fallbackGames = [
   }
 ];
 
-const state = { games: [], query: '', category: '全部' };
+const state = {
+  games: [],
+  query: '',
+  category: '全部'
+};
 
 const grid = document.querySelector('#gameGrid');
 const searchInput = document.querySelector('#searchInput');
 const categoryFilters = document.querySelector('#categoryFilters');
-const totalGames = document.querySelector('#totalGames');
-const mobileGames = document.querySelector('#mobileGames');
-const savedScores = document.querySelector('#savedScores');
-const emptyState = document.querySelector('#emptyState');
-const year = document.querySelector('#year');
+const resultCount = document.querySelector('#resultCount');
+const cardTemplate = document.querySelector('#gameCardTemplate');
 
 function readBestValue(game) {
   const raw = localStorage.getItem(game.storageKey);
-  if (!raw) return '暂无';
+  if (!raw) return '暂无记录';
+
   try {
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'number' || typeof parsed === 'string') return parsed;
-    if (parsed.bestTime) return parsed.bestTime + ' 秒';
+    if (parsed.bestTime) return `${parsed.bestTime} 秒`;
     if (parsed.highScore) return parsed.highScore;
     if (parsed.bestScore) return parsed.bestScore;
-    if (parsed.wins) return parsed.wins + ' 胜';
-  } catch (error) { return raw; }
+    if (parsed.wins) return `${parsed.wins} 胜`;
+  } catch (error) {
+    return raw;
+  }
+
   return raw;
 }
-function normalize(text) { return String(text || '').toLowerCase().trim(); }
+
+function normalize(text) {
+  return String(text || '').toLowerCase().trim();
+}
+
 function filteredGames() {
   const query = normalize(state.query);
   return state.games.filter((game) => {
@@ -562,42 +571,55 @@ function filteredGames() {
     return categoryMatch && (!query || searchable.includes(query));
   });
 }
-function renderStats() {
-  totalGames.textContent = state.games.length;
-  mobileGames.textContent = state.games.filter((game) => game.mobile).length;
-  savedScores.textContent = state.games.filter((game) => localStorage.getItem(game.storageKey)).length;
-}
+
 function renderFilters() {
+  if (!categoryFilters) return;
+
   const categories = ['全部', ...new Set(state.games.map((game) => game.category))];
-  categoryFilters.innerHTML = categories.map((category) => (
-    `<button class="filter-btn"${category === state.category ? ' aria-pressed="true"' : ''} data-category="${category}">${category}</button>`
-  )).join('');
-}
-function renderGames() {
-  const games = filteredGames();
-  emptyState.hidden = games.length > 0;
-  grid.innerHTML = games.map((game) => {
-    const best = readBestValue(game);
-    const mobileLabel = game.mobile ? '手机端支持' : '桌面优先';
-    return `
-      <article class="game-card">
-        <div class="card-topline">
-          <span class="category-pill">${game.category}</span>
-          <span class="difficulty-pill">${game.difficulty}</span>
-        </div>
-        <h3>${game.title}</h3>
-        <p class="subtitle">${game.subtitle}</p>
-        <p class="description">${game.description}</p>
-        <div class="meta-grid">
-          <span>设备：${mobileLabel}</span>
-          <span>最高：${best}</span>
-        </div>
-        <a class="play-btn" href="${game.path}">开始游戏</a>
-      </article>
-    `;
+  categoryFilters.innerHTML = categories.map((category) => {
+    const active = category === state.category ? ' active" aria-pressed="true' : '';
+    return `<button class="filter-button${active}" type="button" data-category="${category}">${category}</button>`;
   }).join('');
 }
-function sync() { renderStats(); renderFilters(); renderGames(); }
+
+function renderGames() {
+  if (!grid) return;
+
+  const games = filteredGames();
+  grid.innerHTML = '';
+
+  if (resultCount) {
+    resultCount.textContent = games.length
+      ? `共 ${games.length} 款游戏，当前大厅收录 ${state.games.length} 款。`
+      : '没有找到匹配的游戏。';
+  }
+
+  games.forEach((game) => {
+    const fragment = cardTemplate
+      ? cardTemplate.content.cloneNode(true)
+      : document.createRange().createContextualFragment('<article class="game-card"><div class="card-glow"></div><div class="game-meta"><span class="category"></span><span class="difficulty"></span></div><h3></h3><p class="subtitle"></p><p class="description"></p><div class="card-stats"><span class="mobile"></span><span class="score"></span></div><a class="play-button" href="#">开始游戏</a></article>');
+
+    fragment.querySelector('.category').textContent = game.category;
+    fragment.querySelector('.difficulty').textContent = game.difficulty;
+    fragment.querySelector('h3').textContent = game.title;
+    fragment.querySelector('.subtitle').textContent = game.subtitle;
+    fragment.querySelector('.description').textContent = game.description;
+    fragment.querySelector('.mobile').textContent = game.mobile ? '手机端支持' : '桌面优先';
+    fragment.querySelector('.score').textContent = `记录：${readBestValue(game)}`;
+
+    const button = fragment.querySelector('.play-button');
+    button.href = game.path;
+    button.textContent = '开始游戏';
+
+    grid.appendChild(fragment);
+  });
+}
+
+function sync() {
+  renderFilters();
+  renderGames();
+}
+
 async function loadGames() {
   try {
     const response = await fetch('data/games.json', { cache: 'no-store' });
@@ -607,9 +629,15 @@ async function loadGames() {
     console.warn('使用内置备用游戏列表：', error);
     state.games = fallbackGames;
   }
+
   sync();
 }
-searchInput?.addEventListener('input', (event) => { state.query = event.target.value; renderGames(); });
+
+searchInput?.addEventListener('input', (event) => {
+  state.query = event.target.value;
+  renderGames();
+});
+
 categoryFilters?.addEventListener('click', (event) => {
   const button = event.target.closest('[data-category]');
   if (!button) return;
@@ -617,5 +645,5 @@ categoryFilters?.addEventListener('click', (event) => {
   renderFilters();
   renderGames();
 });
-if (year) year.textContent = new Date().getFullYear();
+
 loadGames();
