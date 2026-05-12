@@ -33,7 +33,7 @@
       user-select: none;
     }
 
-    button, input { font: inherit; }
+    button, input, summary { font: inherit; }
     a, button {
       border: 1px solid rgba(255, 142, 200, 0.42);
       border-radius: 8px;
@@ -41,15 +41,16 @@
       background: linear-gradient(135deg, rgba(255, 79, 163, 0.2), rgba(87, 230, 255, 0.1));
       text-decoration: none;
       cursor: pointer;
+      touch-action: manipulation;
     }
     a { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 14px; }
-    button { min-height: 42px; padding: 0 15px; touch-action: manipulation; }
+    button { min-height: 42px; padding: 0 15px; }
     button.primary { background: linear-gradient(135deg, rgba(255, 79, 163, 0.52), rgba(87, 230, 255, 0.18)); box-shadow: 0 0 24px rgba(255, 79, 163, 0.25); }
 
     .app {
       min-height: 100dvh;
       display: grid;
-      grid-template-rows: auto minmax(300px, 1fr) auto;
+      grid-template-rows: auto minmax(320px, 1fr) auto;
       gap: 10px;
       padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     }
@@ -57,7 +58,7 @@
     .topbar, .hud { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
     .status { margin-top: 4px; color: var(--muted); font-size: 14px; }
-    .pill { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .pill { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); backdrop-filter: blur(10px); }
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
     .stage {
@@ -70,15 +71,31 @@
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
     }
 
-    canvas { display: block; width: 100%; height: 100%; min-height: 300px; touch-action: none; }
+    canvas { display: block; width: 100%; height: 100%; min-height: 320px; touch-action: none; }
+
+    .floating-hud {
+      position: absolute;
+      z-index: 6;
+      left: 12px;
+      right: 12px;
+      top: 10px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .floating-hud .pill { font-size: 13px; padding: 7px 9px; background: rgba(0, 0, 0, 0.44); }
+    .floating-hud .floating-actions { display: flex; gap: 8px; pointer-events: auto; }
+    .floating-hud button { min-height: 34px; padding: 0 11px; background: rgba(8, 9, 19, 0.56); }
 
     .overlay {
       position: fixed;
       inset: 0;
-      z-index: 10;
+      z-index: 20;
       display: grid;
       place-items: center;
-      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
       overflow: auto;
       background: rgba(8, 9, 19, 0.78);
       backdrop-filter: blur(16px);
@@ -87,18 +104,18 @@
 
     .card {
       width: min(620px, 100%);
-      max-height: calc(100dvh - 32px);
+      max-height: calc(100dvh - 24px);
       overflow: auto;
-      padding: 22px;
+      padding: 20px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.065));
       box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
       -webkit-overflow-scrolling: touch;
     }
-    .card h2 { margin: 0 0 10px; font-size: 28px; }
-    .card p { margin: 0 0 14px; color: var(--muted); line-height: 1.65; }
-    .field { display: grid; gap: 6px; flex: 1 1 220px; color: var(--muted); font-size: 13px; }
+    .card h2 { margin: 0 0 8px; font-size: 27px; }
+    .card p { margin: 0 0 12px; color: var(--muted); line-height: 1.6; }
+    .field { display: grid; gap: 6px; flex: 1 1 180px; color: var(--muted); font-size: 13px; }
     input {
       width: 100%;
       height: 44px;
@@ -108,8 +125,17 @@
       padding: 0 12px;
       color: #fff;
       background: rgba(0, 0, 0, 0.28);
-      text-transform: uppercase;
     }
+    .room-input { max-width: 170px; text-transform: uppercase; }
+    details {
+      width: 100%;
+      margin-top: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.18);
+    }
+    summary { color: var(--cyan); cursor: pointer; }
 
     .mobile-controls {
       position: absolute;
@@ -118,56 +144,60 @@
       display: none;
       justify-content: space-between;
       align-items: flex-end;
-      padding: 16px;
+      padding: 0 14px 14px;
       pointer-events: none;
     }
     .stick {
       position: relative;
-      width: 136px;
-      height: 136px;
+      width: 112px;
+      height: 112px;
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.075);
+      background: rgba(255, 255, 255, 0.045);
+      opacity: 0.72;
       pointer-events: auto;
       touch-action: none;
     }
+    .stick.active { opacity: 1; background: rgba(87, 230, 255, 0.09); }
     .knob {
       position: absolute;
-      left: 43px;
-      top: 43px;
-      width: 50px;
-      height: 50px;
+      left: 36px;
+      top: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: rgba(87, 230, 255, 0.78);
-      box-shadow: 0 0 24px rgba(87, 230, 255, 0.38);
+      background: rgba(87, 230, 255, 0.8);
+      box-shadow: 0 0 22px rgba(87, 230, 255, 0.36);
     }
-    .action-stack { display: grid; gap: 10px; pointer-events: auto; }
+    .action-stack { display: grid; gap: 8px; justify-items: end; pointer-events: auto; }
     .round-button {
-      width: 104px;
-      height: 104px;
+      width: 86px;
+      height: 86px;
+      min-height: 86px;
+      padding: 0;
       border-radius: 50%;
       font-weight: 800;
-      background: rgba(255, 79, 163, 0.34);
+      background: rgba(255, 79, 163, 0.3);
+      opacity: 0.84;
     }
+    .round-button.active { opacity: 1; box-shadow: 0 0 26px rgba(255, 79, 163, 0.35); }
     .power-button {
-      width: 92px;
-      height: 56px;
+      width: 76px;
+      height: 46px;
+      min-height: 46px;
+      padding: 0;
       border-radius: 12px;
       color: #15131c;
-      background: rgba(255, 224, 113, 0.92);
+      background: rgba(255, 224, 113, 0.9);
       font-weight: 800;
-    }
-    .room-fab {
-      min-height: 38px;
-      border-radius: 999px;
-      background: rgba(87, 230, 255, 0.18);
+      opacity: 0.92;
     }
 
     .toast {
       position: absolute;
-      z-index: 7;
+      z-index: 8;
       left: 50%;
-      top: 14px;
+      top: 54px;
       transform: translateX(-50%);
       max-width: min(92%, 520px);
       padding: 9px 12px;
@@ -182,16 +212,26 @@
     .toast.show { opacity: 1; }
     .portrait-note { display: none; color: var(--yellow); }
 
-    @media (pointer: coarse) {
-      body { overflow: hidden; }
-      .app { height: 100dvh; grid-template-rows: auto minmax(0, 1fr) auto; }
+    @media (pointer: coarse) and (orientation: landscape) {
+      html, body { overflow: hidden; height: 100%; }
+      .app {
+        height: 100dvh;
+        min-height: 100dvh;
+        grid-template-rows: 1fr;
+        gap: 0;
+        padding: max(4px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(4px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+      }
+      .topbar, .hud { display: none; }
+      .stage { height: calc(100dvh - max(8px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom))); border-radius: 7px; }
+      canvas { min-height: 0; }
       .mobile-controls { display: flex; }
-      .hud { font-size: 13px; }
-      .topbar h1 { font-size: 18px; }
-      .topbar a, .topbar button { min-height: 36px; padding: 0 11px; }
+      .floating-hud { display: flex; }
+      .floating-hud { top: 8px; left: 10px; right: 10px; }
+      .floating-hud .pill { font-size: 12px; padding: 6px 8px; }
+      .toast { top: 48px; }
     }
 
-    @media (orientation: portrait) and (pointer: coarse) {
+    @media (pointer: coarse) and (orientation: portrait) {
       body { overflow: auto; }
       .app { min-height: 100dvh; height: auto; grid-template-rows: auto 48dvh auto; }
       .mobile-controls { display: none; }
@@ -200,8 +240,8 @@
     }
 
     @media (max-width: 720px) {
-      .card { padding: 16px; }
-      .card h2 { font-size: 23px; }
+      .card { padding: 15px; }
+      .card h2 { font-size: 22px; }
       .row > button, .row > a { flex: 1 1 auto; }
     }
   </style>
@@ -221,11 +261,21 @@
 
     <section class="stage">
       <canvas id="game" width="960" height="600"></canvas>
+      <div class="floating-hud">
+        <div class="row">
+          <span class="pill">粉 <b id="floatP1">0</b> : <b id="floatP2">0</b> 蓝</span>
+          <span class="pill">道具：<b id="floatPower">无</b></span>
+          <span class="pill">房间：<b id="floatRoom">暂无</b></span>
+        </div>
+        <div class="floating-actions">
+          <button id="floatMenu">房间</button>
+          <a href="../../index.html">大厅</a>
+        </div>
+      </div>
       <div id="toast" class="toast"></div>
       <div class="mobile-controls">
         <div id="stick" class="stick" aria-label="移动摇杆"><div id="knob" class="knob"></div></div>
         <div class="action-stack">
-          <button id="roomFab" class="room-fab">房间</button>
           <button id="powerTouch" class="power-button">道具</button>
           <button id="fireTouch" class="round-button">开火</button>
         </div>
@@ -233,16 +283,11 @@
       <div id="menu" class="overlay">
         <section class="card">
           <h2>在线双人坦克战</h2>
-          <p>创建 6 位房间码，邀请朋友加入。击中得分，先到 5 分获胜。现在加入了爆炸、护盾、加速、散弹、地雷和穿墙弹。</p>
-          <p class="portrait-note">手机竖屏也可以创建和加入房间；开始对战后建议横屏操作。</p>
-          <div class="row">
-            <label class="field">Worker 地址
-              <input id="serverInput" autocomplete="off" placeholder="例如 https://你的-worker.workers.dev">
-            </label>
-          </div>
+          <p>创建 6 位房间码，邀请朋友加入。击中得分，先到 5 分获胜。手机开战后建议横屏，界面会自动进入纯战场模式。</p>
+          <p class="portrait-note">竖屏也可以创建和加入房间；真正对战时请横屏操作。</p>
           <div class="row">
             <button id="createRoom" class="primary">创建房间</button>
-            <label class="field">加入房间码
+            <label class="field room-input">房间码
               <input id="roomInput" maxlength="6" autocomplete="off" inputmode="latin" placeholder="ABC123">
             </label>
             <button id="joinRoom">加入房间</button>
@@ -252,7 +297,16 @@
             <button id="copyInvite">复制邀请链接</button>
             <button id="restartMatch">再来一局</button>
           </div>
-          <p>桌面端：A/D 或 ←/→ 旋转，W/S 或 ↑/↓ 前进后退，空格开火，Shift 使用道具。手机端：左摇杆移动/转向，右侧按钮开火和使用道具。</p>
+          <details>
+            <summary>高级设置</summary>
+            <div class="row" style="margin-top:10px">
+              <label class="field">Worker 地址
+                <input id="serverInput" autocomplete="off" placeholder="例如 https://你的-worker.workers.dev">
+              </label>
+              <button id="resetServer">恢复默认地址</button>
+            </div>
+          </details>
+          <p>桌面：W/S 前后，A/D 转向，空格开火，Shift 道具。手机：左摇杆前后和转向，右侧按钮开火和使用道具。</p>
         </section>
       </div>
     </section>
@@ -274,10 +328,14 @@
     const roomInput = document.getElementById("roomInput");
     const roomLabel = document.getElementById("roomLabel");
     const hudRoom = document.getElementById("hudRoom");
+    const floatRoom = document.getElementById("floatRoom");
     const seatEl = document.getElementById("seat");
     const p1Score = document.getElementById("p1Score");
     const p2Score = document.getElementById("p2Score");
+    const floatP1 = document.getElementById("floatP1");
+    const floatP2 = document.getElementById("floatP2");
     const powerLabel = document.getElementById("powerLabel");
+    const floatPower = document.getElementById("floatPower");
     const toast = document.getElementById("toast");
     const stick = document.getElementById("stick");
     const knob = document.getElementById("knob");
@@ -288,12 +346,8 @@
     const POWER_LABELS = { speed: "加速", shield: "护盾", spread: "散弹", mine: "地雷", pierce: "穿墙弹" };
     const POWER_COLORS = { speed: "#8cffb0", shield: "#57e6ff", spread: "#ff8ec8", mine: "#ff6a55", pierce: "#ffe071" };
     const storage = {
-      get(key) {
-        try { return localStorage.getItem(key); } catch (error) { return null; }
-      },
-      set(key, value) {
-        try { localStorage.setItem(key, value); } catch (error) {}
-      }
+      get(key) { try { return localStorage.getItem(key); } catch (error) { return null; } },
+      set(key, value) { try { localStorage.setItem(key, value); } catch (error) {} }
     };
     const clientId = storage.get("tank_duel_player_id") || makeClientId();
     storage.set("tank_duel_player_id", clientId);
@@ -408,6 +462,7 @@
       roomCode = cleanRoom(code);
       roomLabel.textContent = roomCode;
       hudRoom.textContent = roomCode;
+      floatRoom.textContent = roomCode;
       storage.set("tank_duel_last_room", roomCode);
       if (ws) ws.close();
       const url = wsUrl(`/api/room/${roomCode}/websocket?playerId=${encodeURIComponent(clientId)}`);
@@ -436,8 +491,12 @@
         processEffects(message.effects || []);
         p1Score.textContent = message.scores.p1;
         p2Score.textContent = message.scores.p2;
+        floatP1.textContent = message.scores.p1;
+        floatP2.textContent = message.scores.p2;
         const myTank = mySeat && message.tanks ? message.tanks[mySeat] : null;
-        powerLabel.textContent = myTank && myTank.power ? POWER_LABELS[myTank.power] : "无";
+        const powerText = myTank && myTank.power ? POWER_LABELS[myTank.power] : "无";
+        powerLabel.textContent = powerText;
+        floatPower.textContent = powerText;
         if (message.phase === "waiting") setStatus("等待另一名玩家加入房间 " + roomCode);
         if (message.phase === "playing") setStatus("对战中：" + roomCode);
         if (message.phase === "finished") {
@@ -477,6 +536,7 @@
       if (!ws || ws.readyState !== WebSocket.OPEN || payload === lastInput) return;
       ws.send(JSON.stringify({ type: "input", ...input }));
       lastInput = payload;
+      input.usePower = false;
     }
 
     function computeKeyboardInput() {
@@ -516,9 +576,7 @@
       if (!snapshot) return drawEmpty();
 
       ctx.save();
-      if (now < shakeUntil) {
-        ctx.translate((Math.random() - 0.5) * 7, (Math.random() - 0.5) * 7);
-      }
+      if (now < shakeUntil) ctx.translate((Math.random() - 0.5) * 7, (Math.random() - 0.5) * 7);
       drawGrid(snapshot.arena);
       snapshot.walls.forEach(drawWall);
       (snapshot.powerups || []).forEach(drawPowerup);
@@ -570,41 +628,33 @@
       if (tank.shield) {
         ctx.strokeStyle = "rgba(87,230,255,.72)";
         ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, 0, 30, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, 30, 0, Math.PI * 2); ctx.stroke();
       }
       if (boosted) {
         ctx.strokeStyle = "rgba(140,255,176,.45)";
         ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 0, 34, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, 34, 0, Math.PI * 2); ctx.stroke();
       }
       ctx.fillStyle = "rgba(255,255,255,.22)";
       roundRect(-22, -20, 44, 7, 4); ctx.fill();
       roundRect(-22, 13, 44, 7, 4); ctx.fill();
       ctx.fillStyle = color;
-      roundRect(-20, -15, 40, 30, 8);
-      ctx.fill();
+      roundRect(-20, -15, 40, 30, 8); ctx.fill();
       ctx.fillStyle = "#fff";
-      roundRect(0, -5, 33, 10, 4);
-      ctx.fill();
+      roundRect(0, -5, 33, 10, 4); ctx.fill();
       ctx.restore();
       ctx.fillStyle = color;
-      ctx.font = "16px Microsoft YaHei";
+      ctx.font = "15px Microsoft YaHei";
       ctx.textAlign = "center";
-      ctx.fillText(label, tank.x, tank.y - 32);
+      ctx.fillText(label, tank.x, tank.y - 30);
       if (tank.power) {
         ctx.fillStyle = POWER_COLORS[tank.power] || "#ffe071";
-        ctx.font = "13px Microsoft YaHei";
-        ctx.fillText(POWER_LABELS[tank.power], tank.x, tank.y + 42);
+        ctx.font = "12px Microsoft YaHei";
+        ctx.fillText(POWER_LABELS[tank.power], tank.x, tank.y + 40);
       }
       if (seat === mySeat) {
         ctx.strokeStyle = "rgba(255,255,255,.65)";
-        ctx.beginPath();
-        ctx.arc(tank.x, tank.y, 26, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(tank.x, tank.y, 26, 0, Math.PI * 2); ctx.stroke();
       }
     }
 
@@ -612,14 +662,9 @@
       const color = bullet.kind === "pierce" ? "#ffe071" : bullet.kind === "spread" ? "#ff8ec8" : bullet.owner === "p1" ? "#ff8ec8" : "#8cf2ff";
       ctx.strokeStyle = color + "88";
       ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(bullet.x, bullet.y);
-      ctx.lineTo(bullet.x - 9, bullet.y - 9);
-      ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(bullet.x, bullet.y); ctx.lineTo(bullet.x - 9, bullet.y - 9); ctx.stroke();
       ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(bullet.x, bullet.y, 5, 0, Math.PI * 2); ctx.fill();
     }
 
     function drawPowerup(power) {
@@ -628,10 +673,7 @@
       ctx.translate(power.x, power.y);
       ctx.fillStyle = color;
       ctx.strokeStyle = "rgba(255,255,255,.75)";
-      ctx.beginPath();
-      ctx.arc(0, 0, 15, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = "#15131c";
       ctx.textAlign = "center";
       ctx.font = "12px Microsoft YaHei";
@@ -641,9 +683,7 @@
 
     function drawMine(mine) {
       ctx.fillStyle = mine.armed ? "#ff6a55" : "rgba(255,106,85,.38)";
-      ctx.beginPath();
-      ctx.arc(mine.x, mine.y, 11, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(mine.x, mine.y, 11, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,.55)";
       ctx.stroke();
     }
@@ -694,9 +734,7 @@
         const alpha = Math.max(0, 1 - p.age / p.life);
         ctx.globalAlpha = alpha;
         ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * alpha, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r * alpha, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
       }
     }
@@ -733,10 +771,16 @@
     document.getElementById("createRoom").onclick = () => createRoom().catch(error => { setStatus("创建房间失败"); showToast(error.message); });
     document.getElementById("joinRoom").onclick = () => joinRoom().catch(error => { setStatus("加入房间失败"); showToast(error.message); });
     document.getElementById("openMenu").onclick = showMenu;
-    document.getElementById("roomFab").onclick = showMenu;
+    document.getElementById("floatMenu").onclick = showMenu;
     document.getElementById("restartMatch").onclick = () => {
       if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: "restart" }));
       hideMenu();
+    };
+    document.getElementById("resetServer").onclick = () => {
+      serverBase = WORKER_DEFAULT;
+      serverInput.value = WORKER_DEFAULT;
+      storage.set("tank_duel_server", WORKER_DEFAULT);
+      showToast("已恢复默认 Worker 地址");
     };
     document.getElementById("copyInvite").onclick = async () => {
       if (!roomCode) return showToast("还没有房间码");
@@ -764,26 +808,41 @@
       const cy = rect.top + rect.height / 2;
       const dx = clientX - cx;
       const dy = clientY - cy;
-      const dist = Math.min(49, Math.hypot(dx, dy));
+      const dist = Math.min(40, Math.hypot(dx, dy));
       const angle = Math.atan2(dy, dx);
       const x = Math.cos(angle) * dist;
       const y = Math.sin(angle) * dist;
       knob.style.transform = `translate(${x}px, ${y}px)`;
-      input.turn = Math.max(-1, Math.min(1, x / 42));
-      input.move = Math.max(-1, Math.min(1, -y / 42));
+      const turnRaw = x / 38;
+      const moveRaw = -y / 38;
+      input.turn = Math.abs(turnRaw) < 0.16 ? 0 : Math.max(-1, Math.min(1, turnRaw));
+      input.move = Math.abs(moveRaw) < 0.16 ? 0 : Math.max(-1, Math.min(1, moveRaw));
     }
 
-    stick.addEventListener("pointerdown", e => { touchingStick = true; stick.setPointerCapture(e.pointerId); stickPoint(e.clientX, e.clientY); });
+    stick.addEventListener("pointerdown", e => {
+      touchingStick = true;
+      stick.classList.add("active");
+      stick.setPointerCapture(e.pointerId);
+      stickPoint(e.clientX, e.clientY);
+    });
     stick.addEventListener("pointermove", e => { if (touchingStick) stickPoint(e.clientX, e.clientY); });
-    function releaseStick() { touchingStick = false; knob.style.transform = "translate(0,0)"; input.turn = 0; input.move = 0; }
+    function releaseStick() {
+      touchingStick = false;
+      stick.classList.remove("active");
+      knob.style.transform = "translate(0,0)";
+      input.turn = 0;
+      input.move = 0;
+    }
     stick.addEventListener("pointerup", releaseStick);
     stick.addEventListener("pointercancel", releaseStick);
-    fireTouch.addEventListener("pointerdown", e => { fireTouch.setPointerCapture(e.pointerId); input.fire = true; });
-    fireTouch.addEventListener("pointerup", () => input.fire = false);
-    fireTouch.addEventListener("pointercancel", () => input.fire = false);
-    powerTouch.addEventListener("pointerdown", e => { powerTouch.setPointerCapture(e.pointerId); input.usePower = true; });
-    powerTouch.addEventListener("pointerup", () => input.usePower = false);
-    powerTouch.addEventListener("pointercancel", () => input.usePower = false);
+    fireTouch.addEventListener("pointerdown", e => {
+      fireTouch.setPointerCapture(e.pointerId);
+      fireTouch.classList.add("active");
+      input.fire = true;
+    });
+    fireTouch.addEventListener("pointerup", () => { fireTouch.classList.remove("active"); input.fire = false; });
+    fireTouch.addEventListener("pointercancel", () => { fireTouch.classList.remove("active"); input.fire = false; });
+    powerTouch.addEventListener("click", () => { input.usePower = true; showToast("使用道具"); });
   </script>
 </body>
 </html>
